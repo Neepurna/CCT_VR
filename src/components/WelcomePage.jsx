@@ -1,7 +1,7 @@
 import { Box, Button, Typography, Container } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls, PerspectiveCamera } from '@react-three/drei';
+import { PerspectiveCamera } from '@react-three/drei';
 import { BitcoinModel } from './BitcoinModel';
 
 const WelcomePage = () => {
@@ -28,7 +28,8 @@ const WelcomePage = () => {
           width: '100%',
           height: '300px',
           position: 'relative',
-          mb: 4
+          mb: 4,
+          marginTop: '-5vh'  // Moved the marginTop here
         }}
       >
         <Canvas>
@@ -36,7 +37,6 @@ const WelcomePage = () => {
           <pointLight position={[10, 10, 10]} />
           <PerspectiveCamera makeDefault position={[0, 0, 6]} />
           <BitcoinModel />
-          <OrbitControls enableZoom={false} />
         </Canvas>
       </Box>
       <Container 
@@ -93,4 +93,4 @@ const WelcomePage = () => {
   );
 };
 
-export default WelcomePage; 
+export default WelcomePage;

@@ -2,7 +2,7 @@ import { useRef, useEffect } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
-import bitcoinModel from '../assets/bitcoin_01.glb';
+import bitcoinModel from '../assets/bitcoin.glb';
 
 export function BitcoinModel() {
   const modelRef = useRef();
@@ -33,21 +33,42 @@ export function BitcoinModel() {
 
   return (
     <>
-      {/* Add lights */}
-      <ambientLight intensity={0.5} />
-      <directionalLight position={[5, 5, 5]} intensity={1} />
-      <pointLight position={[-5, -5, -5]} intensity={0.5} />
+      {/* Three-point lighting setup */}
+      <ambientLight intensity={0.6} /> {/* Overall ambient light */}
+      
+      {/* Key light - main light source */}
+      <directionalLight 
+        position={[10, 10, 5]} 
+        intensity={1.5}
+        color="#ffffff"
+      />
+      
+      {/* Fill light - softer secondary light */}
+      <pointLight 
+        position={[-5, 5, -5]} 
+        intensity={0.8}
+        color="#b1e1ff"
+      />
+      
+      {/* Back light - rim lighting */}
+      <spotLight
+        position={[0, -10, -5]}
+        intensity={0.5}
+        angle={0.5}
+        penumbra={1}
+        color="#ffffff"
+      />
 
       <group 
         ref={modelRef} 
         dispose={null}
-        rotation={[Math.PI / 2, Math.PI / 2, 0]} // Rotated to lay flat and face forward
-        position={[0, 0, 0]}
+        rotation={[0, 5, 15]} // Rotated to lay flat and face forward
+        position={[0, -.9, 0]} // Center position
       >
         <mesh
           geometry={nodes[firstMeshKey].geometry}
           material={materials[Object.keys(materials)[0]]}
-          scale={[2, 2, 2]}
+          scale={[0.05, 0.05, 0.05]} // Reduced scale from 2 to 0.5
         />
       </group>
     </>
