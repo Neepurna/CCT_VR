@@ -29,7 +29,7 @@ const WelcomePage = () => {
           height: '300px',
           position: 'relative',
           mb: 4,
-          marginTop: '-5vh'  // Moved the marginTop here
+          marginTop: '-15vh'    
         }}
       >
         <Canvas>
@@ -59,35 +59,76 @@ const WelcomePage = () => {
             textShadow: '2px 2px 4px rgba(0,0,0,0.3)',
           }}
         >
-          Welcome to Crypto Coin Tracker
+          Welcome to  <br/> Crypto Coin Tracker
         </Typography>
         <Typography
           variant="h5"
           sx={{
             color: 'white',
             textAlign: 'center',
-            mb: 6,
+            mb: 4,
             textShadow: '1px 1px 2px rgba(0,0,0,0.2)',
           }}
         >
           Track your favorite cryptocurrencies in real-time
         </Typography>
-        <Button
-          variant="contained"
-          size="large"
-          onClick={() => navigate('/dashboard')}
+        <Box
           sx={{
-            backgroundColor: 'white',
-            color: '#000000',
-            padding: '12px 48px',
-            fontSize: '1.2rem',
-            '&:hover': {
-              backgroundColor: 'rgba(255,255,255,0.9)',
-            },
+            display: 'flex',
+            gap: 3,
+            justifyContent: 'center',
+            width: '100%'
           }}
         >
-          Enter Dashboard
-        </Button>
+          <Button
+            variant="contained"
+            size="large"
+            onClick={() => navigate('/immersive')}
+            sx={{
+              backgroundColor: 'white',
+              color: '#000000',
+              padding: '12px 24px',
+              fontSize: '1.1rem',
+              '&:hover': {
+                backgroundColor: 'rgba(255,255,255,0.9)',
+              },
+            }}
+          >
+            Immersive Board
+          </Button>
+          <Button
+            variant="contained"
+            size="large"
+            onClick={() => navigate('/dashboard')}
+            sx={{
+              backgroundColor: 'white',
+              color: '#000000',
+              padding: '12px 24px',
+              fontSize: '1.1rem',
+              '&:hover': {
+                backgroundColor: 'rgba(255,255,255,0.9)',
+              },
+            }}
+          >
+            Dashboard
+          </Button>
+          <Button
+            variant="contained"
+            size="large"
+            onClick={() => navigate('/gameplay')}
+            sx={{
+              backgroundColor: 'white',
+              color: '#000000',
+              padding: '12px 24px',
+              fontSize: '1.1rem',
+              '&:hover': {
+                backgroundColor: 'rgba(255,255,255,0.9)',
+              },
+            }}
+          >
+            Gameplay Board
+          </Button>
+        </Box>
       </Container>
     </Box>
   );

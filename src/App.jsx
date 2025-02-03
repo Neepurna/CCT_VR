@@ -4,6 +4,8 @@ import Navigation from './components/Navigation';
 import CryptoDashboard from './components/CryptoDashboard';
 import Watchlist from './components/Watchlist';
 import WelcomePage from './components/WelcomePage';
+import ImmersiveBoard from './components/ImmersiveBoard';
+import GameplayBoard from './components/GameplayBoard';
 
 const theme = createTheme({
   palette: {
@@ -62,6 +64,8 @@ const App = () => {
                 </>
               }
             />
+            <Route path="/immersive" element={<ImmersiveBoard />} />
+            <Route path="/gameplay" element={<GameplayBoard />} />
           </Routes>
         </Box>
       </BrowserRouter>
