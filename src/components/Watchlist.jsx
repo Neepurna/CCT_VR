@@ -50,7 +50,7 @@ const Watchlist = () => {
             component="h1" 
             sx={{ 
               textAlign: 'center',
-              color: '#2196F3',
+              color: '#000000',
               fontWeight: 'bold',
               mb: 4
             }}
