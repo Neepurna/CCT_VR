@@ -1,5 +1,8 @@
 import { Box, Button, Typography, Container } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import { Canvas } from '@react-three/fiber';
+import { OrbitControls, PerspectiveCamera } from '@react-three/drei';
+import { BitcoinModel } from './BitcoinModel';
 
 const WelcomePage = () => {
   const navigate = useNavigate();
@@ -20,6 +23,22 @@ const WelcomePage = () => {
         overflow: 'hidden'
       }}
     >
+      <Box
+        sx={{
+          width: '100%',
+          height: '300px',
+          position: 'relative',
+          mb: 4
+        }}
+      >
+        <Canvas>
+          <ambientLight intensity={0.5} />
+          <pointLight position={[10, 10, 10]} />
+          <PerspectiveCamera makeDefault position={[0, 0, 6]} />
+          <BitcoinModel />
+          <OrbitControls enableZoom={false} />
+        </Canvas>
+      </Box>
       <Container 
         maxWidth="sm" 
         sx={{
