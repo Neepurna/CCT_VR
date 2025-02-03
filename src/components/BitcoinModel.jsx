@@ -9,7 +9,7 @@ export function BitcoinModel() {
   const { nodes, materials } = useGLTF(bitcoinModel);
 
   useEffect(() => {
-    // Debug log to inspect model structure
+    
     console.log('Model nodes:', nodes);
     console.log('Model materials:', materials);
   }, [nodes, materials]);
@@ -24,7 +24,7 @@ export function BitcoinModel() {
     return null;
   }
 
-  // Find the first mesh in the nodes object
+  
   const firstMeshKey = Object.keys(nodes).find(key => nodes[key].type === 'Mesh');
   if (!firstMeshKey) {
     console.error('No mesh found in the model');
@@ -33,28 +33,48 @@ export function BitcoinModel() {
 
   return (
     <>
-      {/* Three-point lighting setup */}
-      <ambientLight intensity={0.6} /> {/* Overall ambient light */}
+      {/* Ambient light for overall brightness */}
+      <ambientLight intensity={1.2} /> 
       
-      {/* Key light - main light source */}
+      {/* Main directional lights */}
       <directionalLight 
         position={[10, 10, 5]} 
+        intensity={2}
+        color="#ffffff"
+      />
+      <directionalLight 
+        position={[-10, -10, -5]} 
         intensity={1.5}
         color="#ffffff"
       />
       
-      {/* Fill light - softer secondary light */}
+      {/* Point lights for 360-degree coverage */}
       <pointLight 
-        position={[-5, 5, -5]} 
-        intensity={0.8}
-        color="#b1e1ff"
+        position={[5, 0, 5]} 
+        intensity={1}
+        color="#ffffff"
       />
-      
-      {/* Back light - rim lighting */}
+      <pointLight 
+        position={[-5, 0, -5]} 
+        intensity={1}
+        color="#ffffff"
+      />
+      <pointLight 
+        position={[0, 5, 0]} 
+        intensity={1}
+        color="#ffffff"
+      />
+      <pointLight 
+        position={[0, -5, 0]} 
+        intensity={1}
+        color="#ffffff"
+      />
+
+      {/* Spot light for highlighting */}
       <spotLight
-        position={[0, -10, -5]}
-        intensity={0.5}
-        angle={0.5}
+        position={[0, 10, 0]}
+        intensity={1}
+        angle={0.6}
         penumbra={1}
         color="#ffffff"
       />
@@ -62,13 +82,13 @@ export function BitcoinModel() {
       <group 
         ref={modelRef} 
         dispose={null}
-        rotation={[0, 5, 15]} // Rotated to lay flat and face forward
-        position={[0, -.9, 0]} // Center position
+        rotation={[0, 5, 15]}
+        position={[0, -.9, 0]} 
       >
         <mesh
           geometry={nodes[firstMeshKey].geometry}
           material={materials[Object.keys(materials)[0]]}
-          scale={[0.05, 0.05, 0.05]} // Reduced scale from 2 to 0.5
+          scale={[0.04, 0.04, 0.04]} 
         />
       </group>
     </>

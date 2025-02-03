@@ -83,22 +83,6 @@ const WelcomePage = () => {
           <Button
             variant="contained"
             size="large"
-            onClick={() => navigate('/immersive')}
-            sx={{
-              backgroundColor: 'white',
-              color: '#000000',
-              padding: '12px 24px',
-              fontSize: '1.1rem',
-              '&:hover': {
-                backgroundColor: 'rgba(255,255,255,0.9)',
-              },
-            }}
-          >
-            Immersive Board
-          </Button>
-          <Button
-            variant="contained"
-            size="large"
             onClick={() => navigate('/dashboard')}
             sx={{
               backgroundColor: 'white',
@@ -126,7 +110,7 @@ const WelcomePage = () => {
               },
             }}
           >
-            Gameplay Board
+            Immersive Board
           </Button>
         </Box>
       </Container>

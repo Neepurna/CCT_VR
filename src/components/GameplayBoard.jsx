@@ -1,6 +1,6 @@
 import { Canvas, useThree, useFrame } from '@react-three/fiber';
 import { PointerLockControls, Text, Float, useTexture, Html } from '@react-three/drei';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { Vector3, Matrix4, TextureLoader } from 'three';
 import { Physics, RigidBody, CuboidCollider } from '@react-three/rapier';
 import axios from 'axios';
@@ -9,7 +9,6 @@ function HolographicCard({ coin, position }) {
   const { camera } = useThree();
   
   useFrame(() => {
-    // Make the card group face the camera
     group.current.lookAt(camera.position);
   });
   
@@ -26,7 +25,6 @@ function HolographicCard({ coin, position }) {
       position={position}
     >
       <group ref={group}>
-        {/* Card Background */}
         <mesh castShadow>
           <boxGeometry args={[8, 5, 0.1]} />
           <meshPhysicalMaterial
@@ -38,7 +36,6 @@ function HolographicCard({ coin, position }) {
           />
         </mesh>
 
-        {/* Coin Logo */}
         <mesh position={[-3, 1.5, 0.06]}>
           <planeGeometry args={[1, 1]} />
           <meshBasicMaterial 
@@ -48,7 +45,6 @@ function HolographicCard({ coin, position }) {
           />
         </mesh>
 
-        {/* Coin Name and Symbol */}
         <Text
           position={[-1.5, 1.5, 0.06]}
           fontSize={0.4}
@@ -60,7 +56,6 @@ function HolographicCard({ coin, position }) {
           {`${coin.name} (${coin.symbol})`}
         </Text>
 
-        {/* Price */}
         <Text
           position={[-3, 0.5, 0.06]}
           fontSize={0.35}
@@ -75,7 +70,6 @@ function HolographicCard({ coin, position }) {
           })}`}
         </Text>
 
-        {/* 24h Change */}
         <Text
           position={[-3, -0.3, 0.06]}
           fontSize={0.35}
@@ -87,7 +81,6 @@ function HolographicCard({ coin, position }) {
           {`24h: ${coin.quote?.USD?.percent_change_24h >= 0 ? '+' : ''}${coin.quote?.USD?.percent_change_24h?.toFixed(2)}%`}
         </Text>
 
-        {/* Market Cap */}
         <Text
           position={[-3, -1.1, 0.06]}
           fontSize={0.3}
@@ -105,18 +98,18 @@ function HolographicCard({ coin, position }) {
   );
 }
 
-// New SearchBox component
 function SearchBox({ onSearch, visible }) {
   if (!visible) return null;
   
   return (
-    <Html center position={[0, 4, -23.5]}> {/* Moved forward and lower */}
+    <Html center position={[0, 4.5, -24]}>
       <div style={{ 
         width: '400px', 
-        background: 'rgba(26, 35, 53, 0.9)', 
+        background: 'rgba(26, 35, 53, 0.95)', 
         padding: '15px',
         borderRadius: '8px',
-        boxShadow: '0 0 20px rgba(0, 255, 255, 0.2)'
+        boxShadow: '0 0 20px rgba(0, 255, 255, 0.3)',
+        transform: 'translateY(-50%)',
       }}>
         <input
           type="text"
@@ -150,25 +143,38 @@ function Environment() {
   const [searchResults, setSearchResults] = useState([]);
   const obstaclePositions = useRef([]);
   const [movementEnabled, setMovementEnabled] = useState(true);
+  const [controlsEnabled, setControlsEnabled] = useState(true);
+  const searchBoxRef = useRef();
+  const { camera } = useThree();
+
+  const isSearchBoxVisible = useCallback(() => {
+    const searchPosition = new Vector3(0, 3.5, -24);
+    const cameraDirection = new Vector3();
+    camera.getWorldDirection(cameraDirection);
+    
+    const toSearchBox = searchPosition.clone().sub(camera.position).normalize();
+    const angle = cameraDirection.angleTo(toSearchBox);
+    const distance = camera.position.distanceTo(searchPosition);
+    
+    return angle < 1.0 && distance < 30;
+  }, [camera]);
 
   useEffect(() => {
-    // Generate obstacle positions in a circle
     const positions = [...Array(8)].map((_, i) => {
       const angle = (i / 8) * Math.PI * 2;
       const radius = 30;
       return [
         Math.sin(angle) * radius,
-        2, // Height of obstacles
+        2,
         Math.cos(angle) * radius
       ];
     });
     obstaclePositions.current = positions;
 
-    // Fetch coins data
     const fetchCoins = async () => {
       try {
         const response = await axios.get(
-          'https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest?limit=8', // Limit to 8 to match obstacles
+          'https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest?limit=8',
           {
             headers: {
               'X-CMC_PRO_API_KEY': import.meta.env.VITE_CMC_API_KEY,
@@ -185,17 +191,15 @@ function Environment() {
 
   useEffect(() => {
     const handleKeyPress = (e) => {
-      if (e.code === 'KeyE') {
-        setSearchVisible(prev => !prev);
-        setMovementEnabled(prev => !prev); // Toggle movement when E is pressed
-        if (searchVisible) {
-          setSearchResults([]); // Clear search results when closing
-        }
+      if (e.code === 'KeyE' && isSearchBoxVisible() && !searchVisible) {
+        setSearchVisible(true);
+        setControlsEnabled(false);
       }
     };
+    
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [searchVisible]);
+  }, [searchVisible, isSearchBoxVisible]);
 
   const handleSearch = async (searchTerm) => {
     try {
@@ -210,11 +214,14 @@ function Environment() {
       const filtered = response.data.data.filter(coin =>
         coin.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         coin.symbol.toLowerCase().includes(searchTerm.toLowerCase())
-      ).slice(0, 1); // Get only first match
+      ).slice(0, 1);
 
       setSearchResults(filtered);
-      setSearchVisible(false); // Hide search after finding result
-      setMovementEnabled(true); // Re-enable movement after search
+      setSearchVisible(false);
+      setTimeout(() => {
+        setControlsEnabled(true);
+        document.body.requestPointerLock();
+      }, 100);
     } catch (error) {
       console.error('Error searching:', error);
     }
@@ -222,10 +229,9 @@ function Environment() {
 
   return (
     <group>
-      {/* Floor with brighter color */}
       <RigidBody type="fixed">
         <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]} receiveShadow>
-          <planeGeometry args={[100, 100]} /> {/* Increased floor size */}
+          <planeGeometry args={[100, 100]} />
           <meshStandardMaterial 
             color="#2196f3" 
             metalness={0.2}
@@ -235,7 +241,6 @@ function Environment() {
         <CuboidCollider args={[50, 0.1, 50]} position={[0, -0.1, 0]} />
       </RigidBody>
 
-      {/* Title - repositioned */}
       <Text
         position={[0, 12, -30]}
         fontSize={3}
@@ -247,11 +252,10 @@ function Environment() {
         outlineColor="#000000"
         outlineOpacity={0.8}
       >
-        Crypto Coin Tracker
+       Immersive Crypto Coin Tracker
       </Text>
 
-      {/* Search Box Obstacle */}
-      <RigidBody type="fixed">
+      <RigidBody type="fixed" ref={searchBoxRef}>
         <mesh position={[0, 2, -25]} castShadow>
           <boxGeometry args={[4, 4, 2]} />
           <meshStandardMaterial 
@@ -264,7 +268,6 @@ function Environment() {
         </mesh>
         <CuboidCollider args={[2, 2, 1]} position={[0, 2, -25]} />
         
-        {/* Enhanced text visibility */}
         <group position={[0, 3.5, -23.8]}>
           <Text
             fontSize={0.6}
@@ -277,13 +280,12 @@ function Environment() {
           >
             Press E to Search
           </Text>
-          {/* Glow effect layer */}
           <Text
             fontSize={0.6}
             color="#00ffff"
             anchorX="center"
             anchorY="middle"
-            opacity={0.5}
+            opacity={isSearchBoxVisible() ? 0.5 : 0}
             position={[0, 0, -0.1]}
           >
             Press E to Search
@@ -291,23 +293,19 @@ function Environment() {
         </group>
       </RigidBody>
 
-      {/* Search Interface */}
       <SearchBox onSearch={handleSearch} visible={searchVisible} />
 
-      {/* Search Results - positioned as a floating card */}
       {searchResults.map((coin, index) => (
         <HolographicCard
           key={coin.id}
           coin={coin}
-          position={[0, 6, -24]} // Lowered and brought forward
+          position={[0, 6, -24]}
         />
       ))}
 
-      {/* Obstacles with colliders and cards above them */}
       <RigidBody type="fixed">
         {obstaclePositions.current.map((position, i) => (
           <group key={i}>
-            {/* Obstacle cube */}
             <mesh position={position} castShadow>
               <boxGeometry args={[2, 4, 2]} />
               <meshStandardMaterial 
@@ -318,14 +316,13 @@ function Environment() {
             </mesh>
             <CuboidCollider args={[1, 2, 1]} position={position} />
             
-            {/* Holographic card above cube */}
             {coins[i] && (
               <HolographicCard
                 coin={coins[i]}
                 position={[
-                  position[0],     // Same X as obstacle
-                  position[1] + 6, // 6 units above obstacle
-                  position[2]      // Same Z as obstacle
+                  position[0],
+                  position[1] + 6,
+                  position[2]
                 ]}
               />
             )}
@@ -333,23 +330,42 @@ function Environment() {
         ))}
       </RigidBody>
 
-      {/* Pass movement state to Player */}
-      <Player movementEnabled={movementEnabled} />
+      <Player enabled={controlsEnabled} />
     </group>
   );
 }
 
-function Player({ movementEnabled = true }) {
+function Player({ enabled }) {
   const { camera } = useThree();
   const moveSpeed = 0.15;
   const keys = useRef({});
   const playerHeight = 1.8;
+  const controlsRef = useRef();
 
   useEffect(() => {
-    camera.position.set(0, playerHeight, 5); // Start position
+    keys.current = {};
+    if (controlsRef.current) {
+      if (!enabled) {
+        controlsRef.current.unlock();
+      }
+    }
+  }, [enabled]);
 
-    const handleKeyDown = (e) => keys.current[e.code] = true;
-    const handleKeyUp = (e) => keys.current[e.code] = false;
+  useEffect(() => {
+    camera.position.set(0, playerHeight, 5);
+
+    const handleKeyDown = (e) => {
+      if (enabled && (e.code === 'KeyW' || e.code === 'KeyA' || e.code === 'KeyS' || e.code === 'KeyD')) {
+        keys.current[e.code] = true;
+        e.preventDefault();
+      }
+    };
+    
+    const handleKeyUp = (e) => {
+      if (e.code === 'KeyW' || e.code === 'KeyA' || e.code === 'KeyS' || e.code === 'KeyD') {
+        keys.current[e.code] = false;
+      }
+    };
 
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('keyup', handleKeyUp);
@@ -358,38 +374,39 @@ function Player({ movementEnabled = true }) {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
-  }, [camera]);
+  }, [camera, enabled]);
 
   useFrame(() => {
-    if (!movementEnabled) return; // Skip movement processing if disabled
+    if (!enabled) return;
 
-    // Movement direction
     const forward = keys.current['KeyW'] ? -1 : (keys.current['KeyS'] ? 1 : 0);
     const sideways = keys.current['KeyA'] ? -1 : (keys.current['KeyD'] ? 1 : 0);
 
     if (forward || sideways) {
-      // Get camera's forward and right vectors
       const matrix = new Matrix4();
       matrix.extractRotation(camera.matrix);
       
       const forwardVector = new Vector3(0, 0, 1).applyMatrix4(matrix);
       const sidewaysVector = new Vector3(1, 0, 0).applyMatrix4(matrix);
 
-      // Calculate movement
       const movement = new Vector3()
         .addScaledVector(forwardVector, forward * moveSpeed)
         .addScaledVector(sidewaysVector, sideways * moveSpeed);
-      movement.y = 0; // Keep vertical position constant
+      movement.y = 0;
 
-      // Apply movement
       camera.position.add(movement);
     }
 
-    // Maintain height
     camera.position.y = playerHeight;
   });
 
-  return <PointerLockControls enabled={movementEnabled} />;
+  useEffect(() => {
+    if (enabled) {
+      document.body.requestPointerLock();
+    }
+  }, [enabled]);
+
+  return <PointerLockControls ref={controlsRef} enabled={enabled} />;
 }
 
 const GameplayBoard = () => {
@@ -400,8 +417,6 @@ const GameplayBoard = () => {
           <ambientLight intensity={0.5} />
           <pointLight position={[10, 10, 10]} castShadow />
           <Environment />
-          <Player />
-          <PointerLockControls />
         </Physics>
       </Canvas>
     </div>

@@ -106,4 +106,4 @@ const CryptoDashboard = () => {
   );
 };
 
-export default CryptoDashboard; 
+export default CryptoDashboard;
