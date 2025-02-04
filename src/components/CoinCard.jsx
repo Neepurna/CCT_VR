@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Card, CardContent, Typography, Box, CardActions, Button } from '@mui/material';
-import { AddCircleOutline, RemoveCircleOutline } from '@mui/icons-material';
+import { Card, CardContent, Typography, Button } from '@mui/material';
 
-const CoinCard = ({ coin }) => {
+function CoinCard({ coin }) {
   const [isInWatchlist, setIsInWatchlist] = useState(false);
 
   useEffect(() => {
@@ -11,74 +10,43 @@ const CoinCard = ({ coin }) => {
   }, [coin.id]);
 
   const handleWatchlistToggle = () => {
-    const watchlist = JSON.parse(localStorage.getItem('watchlist') || '[]');
+    let watchlist = JSON.parse(localStorage.getItem('watchlist') || '[]');
     
     if (isInWatchlist) {
-      const newWatchlist = watchlist.filter(item => item.id !== coin.id);
-      localStorage.setItem('watchlist', JSON.stringify(newWatchlist));
-      setIsInWatchlist(false);
-      window.dispatchEvent(new Event('watchlistUpdate'));
+      watchlist = watchlist.filter(item => item.id !== coin.id);
     } else {
       watchlist.push(coin);
-      localStorage.setItem('watchlist', JSON.stringify(watchlist));
-      setIsInWatchlist(true);
-      window.dispatchEvent(new Event('watchlistUpdate'));
     }
+
+    localStorage.setItem('watchlist', JSON.stringify(watchlist));
+    setIsInWatchlist(!isInWatchlist);
+    window.dispatchEvent(new Event('watchlistUpdate'));
   };
 
   return (
-    <Card sx={{ 
-      width: '100%',
-      height: '100%',
-      backgroundColor: 'white',
-      borderRadius: 1,
-      boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-      '&:hover': {
-        boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
-      }
-    }}>
-      <CardContent sx={{ p: 2 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+    <Card style={{ margin: '10px', padding: '10px' }}>
+      <CardContent>
+        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
           <img 
             src={`https://s2.coinmarketcap.com/static/img/coins/64x64/${coin.id}.png`}
             alt={coin.name}
-            style={{ width: 32, height: 32, marginRight: 8 }}
+            style={{ width: '30px', marginRight: '10px' }}
           />
-          <Typography variant="h6" sx={{ fontWeight: 500 }}>
-            {coin.name} ({coin.symbol})
-          </Typography>
-        </Box>
-        <Typography sx={{ mb: 1 }}>
-          Price: ${coin.quote?.USD?.price?.toFixed(2)}
-        </Typography>
-        <Typography sx={{ 
-          mb: 1,
-          color: coin.quote?.USD?.percent_change_24h >= 0 ? '#000000' : '#666666'
-        }}>
-          24h Change: {coin.quote?.USD?.percent_change_24h >= 0 ? '+' : ''}{coin.quote?.USD?.percent_change_24h?.toFixed(2)}%
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          Market Cap: ${coin.quote?.USD?.market_cap?.toLocaleString()}
-        </Typography>
-      </CardContent>
-      <CardActions sx={{ p: 2, pt: 0 }}>
+          <Typography variant="h6">{coin.name} ({coin.symbol})</Typography>
+        </div>
+        <Typography>Price: ${coin.quote?.USD?.price?.toFixed(2)}</Typography>
+        <Typography>24h Change: {coin.quote?.USD?.percent_change_24h?.toFixed(2)}%</Typography>
+        <Typography>Market Cap: ${coin.quote?.USD?.market_cap?.toLocaleString()}</Typography>
         <Button 
-          fullWidth
-          variant="outlined"
-          size="small"
-          startIcon={isInWatchlist ? <RemoveCircleOutline /> : <AddCircleOutline />}
+          variant="contained"
           onClick={handleWatchlistToggle}
-          color={isInWatchlist ? "error" : "primary"}
-          sx={{
-            textTransform: 'none',
-            borderRadius: 1
-          }}
+          style={{ marginTop: '10px' }}
         >
           {isInWatchlist ? 'Remove from Watchlist' : 'Add to Watchlist'}
         </Button>
-      </CardActions>
+      </CardContent>
     </Card>
   );
-};
+}
 
-export default CoinCard; 
+export default CoinCard;

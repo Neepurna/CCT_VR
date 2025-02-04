@@ -1,8 +1,22 @@
-# React + Vite
+### Immerisve Crypto Coin Tracker 
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Student Information
+- Name: Neepurna Baral
+- Student ID: 101586698
 
-Currently, two official plugins are available:
+## Setup Instructions
+1. Clone the repository
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Start the development server:
+   ```bash
+   npm run dev
+   ```
+4. Open your browser and navigate to `http://localhost:5173`
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Acknowledgments
+Special thanks to:
+- Bruno Simons for the Three.js tutorial
+- Gemini Matrix Technology for the React tutorial
