@@ -33,10 +33,10 @@ export function BitcoinModel() {
 
   return (
     <>
-      {/* Ambient light for overall brightness */}
+      
       <ambientLight intensity={1.2} /> 
       
-      {/* Main directional lights */}
+      
       <directionalLight 
         position={[10, 10, 5]} 
         intensity={2}
@@ -48,7 +48,7 @@ export function BitcoinModel() {
         color="#ffffff"
       />
       
-      {/* Point lights for 360-degree coverage */}
+      
       <pointLight 
         position={[5, 0, 5]} 
         intensity={1}
@@ -70,7 +70,7 @@ export function BitcoinModel() {
         color="#ffffff"
       />
 
-      {/* Spot light for highlighting */}
+     
       <spotLight
         position={[0, 10, 0]}
         intensity={1}
