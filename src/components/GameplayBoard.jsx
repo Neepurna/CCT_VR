@@ -1,5 +1,5 @@
 import { Canvas, useThree, useFrame } from '@react-three/fiber';
-import { PointerLockControls, Text, Float, useTexture, Html } from '@react-three/drei';
+import { PointerLockControls, Text, Float, useTexture, Html } from '@react-three/drei'; // Change back to PointerLockControls
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { Vector3, Matrix4, TextureLoader } from 'three';
 import { Physics, RigidBody, CuboidCollider } from '@react-three/rapier';
@@ -220,7 +220,6 @@ function Environment() {
       setSearchVisible(false);
       setTimeout(() => {
         setControlsEnabled(true);
-        document.body.requestPointerLock();
       }, 100);
     } catch (error) {
       console.error('Error searching:', error);
@@ -279,6 +278,18 @@ function Environment() {
             outlineOpacity={1}
           >
             Press E to Search
+          </Text>
+          <Text
+            fontSize={0.4}
+            color="#ffffff"
+            anchorX="center"
+            anchorY="middle"
+            outlineWidth={0.15}
+            outlineColor="#000000"
+            outlineOpacity={1}
+            position={[0, -0.8, 0]}
+          >
+            Mouse for rotation and WASD keys for movement
           </Text>
           <Text
             fontSize={0.6}
@@ -347,6 +358,8 @@ function Player({ enabled }) {
     if (controlsRef.current) {
       if (!enabled) {
         controlsRef.current.unlock();
+      } else {
+        document.body.requestPointerLock();
       }
     }
   }, [enabled]);
@@ -400,13 +413,7 @@ function Player({ enabled }) {
     camera.position.y = playerHeight;
   });
 
-  useEffect(() => {
-    if (enabled) {
-      document.body.requestPointerLock();
-    }
-  }, [enabled]);
-
-  return <PointerLockControls ref={controlsRef} enabled={enabled} />;
+  return <PointerLockControls ref={controlsRef} />; // Back to PointerLockControls without enabled prop
 }
 
 const GameplayBoard = () => {
