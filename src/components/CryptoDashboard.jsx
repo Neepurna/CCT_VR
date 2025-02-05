@@ -13,9 +13,10 @@ function CryptoDashboard() {
     const getCoins = async () => {
       try {
         const apiKey = import.meta.env.VITE_CMC_API_KEY;
+        console.log('API Key available:', !!apiKey); // Debug log
+
         if (!apiKey) {
-          console.error('API key is not defined');
-          return;
+          throw new Error('API key is not configured. Please check Netlify environment variables.');
         }
 
         const response = await axios.get('https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest', {
@@ -28,12 +29,16 @@ function CryptoDashboard() {
           }
         });
 
-        if (response.data && response.data.data) {
-          setCoins(response.data.data);
-          setFilteredCoins(response.data.data);
+        if (!response.data || !response.data.data) {
+          throw new Error('Invalid API response format');
         }
+
+        setCoins(response.data.data);
+        setFilteredCoins(response.data.data);
       } catch (error) {
-        console.error('Error fetching data:', error);
+        console.error('Error details:', error.message);
+        setCoins([]);
+        setFilteredCoins([]);
       }
       setLoading(false);
     };
