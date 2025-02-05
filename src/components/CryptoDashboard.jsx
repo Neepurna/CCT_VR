@@ -12,15 +12,28 @@ function CryptoDashboard() {
   useEffect(() => {
     const getCoins = async () => {
       try {
+        const apiKey = import.meta.env.VITE_CMC_API_KEY;
+        if (!apiKey) {
+          console.error('API key is not defined');
+          return;
+        }
+
         const response = await axios.get('https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest', {
           headers: {
-            'X-CMC_PRO_API_KEY': import.meta.env.VITE_CMC_API_KEY,
+            'X-CMC_PRO_API_KEY': apiKey,
           },
+          params: {
+            limit: 100,
+            convert: 'USD'
+          }
         });
-        setCoins(response.data.data);
-        setFilteredCoins(response.data.data);
+
+        if (response.data && response.data.data) {
+          setCoins(response.data.data);
+          setFilteredCoins(response.data.data);
+        }
       } catch (error) {
-        console.error('Error:', error);
+        console.error('Error fetching data:', error);
       }
       setLoading(false);
     };
