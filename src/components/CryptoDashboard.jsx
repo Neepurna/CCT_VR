@@ -12,16 +12,9 @@ function CryptoDashboard() {
   useEffect(() => {
     const getCoins = async () => {
       try {
-        const apiKey = import.meta.env.VITE_CMC_API_KEY;
-        console.log('API Key available:', !!apiKey); // Debug log
-
-        if (!apiKey) {
-          throw new Error('API key is not configured. Please check Netlify environment variables.');
-        }
-
         const response = await axios.get('https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest', {
           headers: {
-            'X-CMC_PRO_API_KEY': apiKey,
+            'X-CMC_PRO_API_KEY': 'a2ad44c1-cedd-4979-9914-50dca1c61fdb',
           },
           params: {
             limit: 100,
@@ -29,12 +22,10 @@ function CryptoDashboard() {
           }
         });
 
-        if (!response.data || !response.data.data) {
-          throw new Error('Invalid API response format');
+        if (response.data && response.data.data) {
+          setCoins(response.data.data);
+          setFilteredCoins(response.data.data);
         }
-
-        setCoins(response.data.data);
-        setFilteredCoins(response.data.data);
       } catch (error) {
         console.error('Error details:', error.message);
         setCoins([]);
