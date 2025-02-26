@@ -1,88 +1,125 @@
 import { useState, useEffect } from 'react';
-import { Typography, Grid, Box } from '@mui/material';
-import CoinCard from './CoinCard';
+import axios from 'axios';
+import { Box, Typography, List, ListItem, ListItemText, ListItemAvatar, Avatar, IconButton, CircularProgress, Alert } from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
+import RefreshIcon from '@mui/icons-material/Refresh';
+
+const API_URL = 'http://localhost:5000/api/watchlist';
 
 const Watchlist = () => {
-  const [watchlistCoins, setWatchlistCoins] = useState([]);
+  const [watchlist, setWatchlist] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [refreshing, setRefreshing] = useState(false);
 
-  const handleStorageChange = () => {
-    const coins = JSON.parse(localStorage.getItem('watchlist') || '[]');
-    setWatchlistCoins(coins);
+  // Fetch watchlist from backend
+  const fetchWatchlist = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await axios.get(API_URL);
+      setWatchlist(response.data);
+    } catch (err) {
+      setError('Failed to fetch watchlist: ' + (err.response?.data?.message || err.message));
+      console.error('Error fetching watchlist:', err);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  // Remove coin from watchlist
+  const handleRemove = async (coinId) => {
+    try {
+      await axios.delete(`${API_URL}/${coinId}`);
+      setWatchlist(watchlist.filter(coin => coin.coinId !== coinId));
+    } catch (err) {
+      setError('Failed to remove coin: ' + (err.response?.data?.message || err.message));
+      console.error('Error removing coin from watchlist:', err);
+    }
+  };
+
+  // Handle refresh action
+  const handleRefresh = () => {
+    setRefreshing(true);
+    fetchWatchlist();
   };
 
   useEffect(() => {
-    // Initial load
-    handleStorageChange();
-
-    // Listen for custom watchlist update event
-    window.addEventListener('watchlistUpdate', handleStorageChange);
-    // Listen for storage changes from other tabs
-    window.addEventListener('storage', handleStorageChange);
-    
-    return () => {
-      window.removeEventListener('watchlistUpdate', handleStorageChange);
-      window.removeEventListener('storage', handleStorageChange);
-    };
+    fetchWatchlist();
   }, []);
 
   return (
-    <Box 
-      component="main"
-      sx={{ 
-        position: 'absolute',
-        top: 64,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        backgroundColor: '#f8f9fa',
-        overflowY: 'auto'
-      }}
-    >
-      <Box sx={{ 
-        width: '100%',
-        minHeight: '100%',
-        display: 'flex',
-        flexDirection: 'column'
-      }}>
-        <Box sx={{ width: '100%', p: 4 }}>
-          <Typography 
-            variant="h3" 
-            component="h1" 
-            sx={{ 
-              textAlign: 'center',
-              color: '#000000',
-              fontWeight: 'bold',
-              mb: 4
-            }}
-          >
-            Your Watchlist
-          </Typography>
-        </Box>
-        <Box sx={{ flex: 1, px: 3, pb: 3 }}>
-          <Grid container spacing={3}>
-            {watchlistCoins.length === 0 ? (
-              <Grid item xs={12}>
-                <Typography 
-                  variant="h6" 
-                  sx={{ 
-                    textAlign: 'center', 
-                    color: 'text.secondary',
-                    mt: 4
-                  }}
-                >
-                  No coins in your watchlist yet
-                </Typography>
-              </Grid>
-            ) : (
-              watchlistCoins.map(coin => (
-                <Grid item xs={12} sm={6} lg={4} key={coin.id}>
-                  <CoinCard coin={coin} />
-                </Grid>
-              ))
-            )}
-          </Grid>
-        </Box>
+    <Box sx={{ width: '100%', maxWidth: 600, margin: '0 auto' }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+        <Typography variant="h4" component="h2">
+          My Watchlist
+        </Typography>
+        <IconButton onClick={handleRefresh} disabled={refreshing}>
+          {refreshing ? <CircularProgress size={24} /> : <RefreshIcon />}
+        </IconButton>
       </Box>
+      
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {error}
+        </Alert>
+      )}
+      
+      {loading && !refreshing ? (
+        <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
+          <CircularProgress />
+        </Box>
+      ) : watchlist.length === 0 ? (
+        <Alert severity="info">Your watchlist is empty. Add coins from the dashboard.</Alert>
+      ) : (
+        <List>
+          {watchlist.map((coin) => (
+            <ListItem 
+              key={coin.coinId || coin._id}
+              secondaryAction={
+                <IconButton edge="end" onClick={() => handleRemove(coin.coinId)}>
+                  <DeleteIcon />
+                </IconButton>
+              }
+              sx={{
+                border: '1px solid #ddd',
+                borderRadius: '4px',
+                mb: 1,
+                background: '#f9f9f9'
+              }}
+            >
+              <ListItemAvatar>
+                <Avatar alt={coin.name} src={coin.imageUrl} />
+              </ListItemAvatar>
+              <ListItemText
+                primary={`${coin.name} (${coin.symbol})`}
+                secondary={
+                  <>
+                    <Typography component="span" variant="body2">
+                      ${coin.price?.toFixed(2) || '0.00'} • 
+                    </Typography>
+                    <Typography 
+                      component="span" 
+                      variant="body2"
+                      sx={{ 
+                        color: (coin.percentChange24h || 0) >= 0 ? 'green' : 'red',
+                        ml: 1
+                      }}
+                    >
+                      {(coin.percentChange24h || 0) >= 0 ? '+' : ''}
+                      {(coin.percentChange24h || 0)?.toFixed(2)}%
+                    </Typography>
+                    <Typography component="div" variant="caption" color="text.secondary">
+                      Added: {new Date(coin.dateCreated).toLocaleDateString()}
+                    </Typography>
+                  </>
+                }
+              />
+            </ListItem>
+          ))}
+        </List>
+      )}
     </Box>
   );
 };

@@ -1,47 +1,44 @@
 const express = require('express');
-const watchlist = require('../utils/watchlist');
-
 const router = express.Router();
+const { getAllWatchlistItems, addToWatchlist, removeFromWatchlist } = require('../utils/watchlist');
 
-// GET request to fetch all watchlist items
-router.get('/api/watchlist', async (req, res) => {
+// Get all watchlist items
+router.get('/', async (req, res) => {
   try {
-    const items = await watchlist.getItems();
+    const items = await getAllWatchlistItems();
     res.json(items);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+  } catch (error) {
+    res.status(500).json({ error: 'Server error' });
   }
 });
 
-// POST request to add an item to watchlist
-router.post('/api/watchlist', async (req, res) => {
-  const { symbol } = req.body;
-  
-  if (!symbol) {
-    return res.status(400).json({ error: 'Symbol is required' });
-  }
-
+// Add a coin to watchlist
+router.post('/', async (req, res) => {
   try {
-    const newItem = await watchlist.addItem(symbol);
-    res.status(201).json(newItem);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// DELETE request to remove an item from watchlist
-router.delete('/api/watchlist/:id', async (req, res) => {
-  const { id } = req.params;
-  
-  try {
-    const isDeleted = await watchlist.removeItem(id);
-    if (isDeleted) {
-      res.status(204).send();
-    } else {
-      res.status(404).json({ error: 'Item not found in watchlist' });
+    const result = await addToWatchlist(req.body);
+    
+    if (!result.success) {
+      return res.status(400).json({ message: result.message });
     }
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+    
+    res.status(201).json(result.data);
+  } catch (error) {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Delete a coin from watchlist
+router.delete('/:coinId', async (req, res) => {
+  try {
+    const result = await removeFromWatchlist(req.params.coinId);
+    
+    if (!result.success) {
+      return res.status(404).json({ message: result.message });
+    }
+    
+    res.json({ message: result.message });
+  } catch (error) {
+    res.status(500).json({ error: 'Server error' });
   }
 });
 

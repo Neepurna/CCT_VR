@@ -1,31 +1,34 @@
 const express = require('express');
 const cors = require('cors');
-const bodyParser = require('body-parser');
-require('dotenv').config();
-
-
+const dotenv = require('dotenv');
 const connectDB = require('./config/db');
 const watchlistRoutes = require('./routes/watchlistRoutes');
 
+// Load environment variables
+dotenv.config();
 
-const app = express();
-const PORT = process.env.PORT || 3000;
-
-
-app.use(cors());
-app.use(bodyParser.json());
-
-
+// Connect to database
 connectDB();
 
+// Initialize Express
+const app = express();
 
-app.use(watchlistRoutes);
+// Middleware
+app.use(cors());
+app.use(express.json());
 
+// Routes
+app.use('/api/watchlist', watchlistRoutes);
+
+// Base route
 app.get('/', (req, res) => {
-  res.send('Crypto Tracker API is running');
+  res.send('API is running...');
 });
 
+// Port configuration
+const PORT = process.env.PORT || 5000;
 
+// Start server
 app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });

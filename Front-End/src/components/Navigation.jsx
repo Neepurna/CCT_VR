@@ -1,36 +1,54 @@
-import { AppBar, Toolbar, Button } from '@mui/material';
-import { Link } from 'react-router-dom';
+import { AppBar, Toolbar, Typography, Button, Box } from '@mui/material';
+import { Link as RouterLink } from 'react-router-dom';
+import HomeIcon from '@mui/icons-material/Home';
+import DashboardIcon from '@mui/icons-material/Dashboard';
+import ListAltIcon from '@mui/icons-material/ListAlt';
+import VideogameAssetIcon from '@mui/icons-material/VideogameAsset';
 
-function Navigation() {
+const Navigation = () => {
   return (
-    <AppBar position="static" style={{ backgroundColor: '#333' }}>
+    <AppBar position="static">
       <Toolbar>
-        <div style={{ display: 'flex', gap: '20px' }}>
+        <Typography variant="h6" sx={{ flexGrow: 1 }}>
+          Crypto Tracker
+        </Typography>
+        <Box sx={{ display: 'flex', gap: 2 }}>
           <Button 
-            component={Link} 
-            to="/" 
-            style={{ color: 'white' }}
+            color="inherit" 
+            component={RouterLink} 
+            to="/"
+            startIcon={<HomeIcon />}
           >
-            Crypto Tracker
+            Home
           </Button>
           <Button 
-            component={Link} 
-            to="/dashboard" 
-            style={{ color: 'white' }}
+            color="inherit" 
+            component={RouterLink} 
+            to="/dashboard"
+            startIcon={<DashboardIcon />}
           >
             Dashboard
           </Button>
           <Button 
-            component={Link} 
-            to="/watchlist" 
-            style={{ color: 'white' }}
+            color="inherit" 
+            component={RouterLink} 
+            to="/watchlist"
+            startIcon={<ListAltIcon />}
           >
             Watchlist
           </Button>
-        </div>
+          <Button 
+            color="inherit" 
+            component={RouterLink} 
+            to="/gameplay"
+            startIcon={<VideogameAssetIcon />}
+          >
+            Immersive
+          </Button>
+        </Box>
       </Toolbar>
     </AppBar>
   );
-}
+};
 
 export default Navigation;

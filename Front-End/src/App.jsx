@@ -1,21 +1,22 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { ThemeProvider, createTheme, CssBaseline, Box } from '@mui/material';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Box, ThemeProvider, createTheme, CssBaseline } from '@mui/material';
 import Navigation from './components/Navigation';
 import CryptoDashboard from './components/CryptoDashboard';
 import Watchlist from './components/Watchlist';
 import WelcomePage from './components/WelcomePage';
 import GameplayBoard from './components/GameplayBoard';
+import './App.css';
 
 const theme = createTheme({
   palette: {
     mode: 'light',
     primary: {
-      main: '#000000',
+      main: '#1976d2',
       light: '#404040',
       dark: '#000000',
     },
     secondary: {
-      main: '#666666',
+      main: '#f50057',
       light: '#999999',
       dark: '#333333',
     },
@@ -33,43 +34,25 @@ const theme = createTheme({
   },
 });
 
-const App = () => {
+function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <BrowserRouter>
-        <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-          <Routes>
-            <Route path="/" element={<WelcomePage />} />
-            <Route
-              path="/dashboard"
-              element={
-                <>
-                  <Navigation />
-                  <Box sx={{ flex: 1, padding: '24px 0' }}>
-                    <CryptoDashboard />
-                  </Box>
-                </>
-              }
-            />
-            <Route
-              path="/watchlist"
-              element={
-                <>
-                  <Navigation />
-                  <Box sx={{ flex: 1, padding: '24px 0' }}>
-                    <Watchlist />
-                  </Box>
-                </>
-              }
-            />
-            
-            <Route path="/gameplay" element={<GameplayBoard />} />
-          </Routes>
+      <Router>
+        <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+          <Navigation />
+          <Box sx={{ flexGrow: 1, padding: 2 }}>
+            <Routes>
+              <Route path="/" element={<WelcomePage />} />
+              <Route path="/dashboard" element={<CryptoDashboard />} />
+              <Route path="/watchlist" element={<Watchlist />} />
+              <Route path="/gameplay" element={<GameplayBoard />} />
+            </Routes>
+          </Box>
         </Box>
-      </BrowserRouter>
+      </Router>
     </ThemeProvider>
   );
-};
+}
 
 export default App;

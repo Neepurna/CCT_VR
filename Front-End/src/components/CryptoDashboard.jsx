@@ -1,60 +1,105 @@
 import { useState, useEffect } from 'react';
-import { Grid, Typography, CircularProgress } from '@mui/material';
 import axios from 'axios';
-import SearchPanel from './SearchPanel';
+import { Box, Typography, Grid, CircularProgress, Pagination } from '@mui/material';
 import CoinCard from './CoinCard';
 
-function CryptoDashboard() {
+const CryptoDashboard = () => {
   const [coins, setCoins] = useState([]);
-  const [filteredCoins, setFilteredCoins] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const coinsPerPage = 12;
 
   useEffect(() => {
-    const getCoins = async () => {
+    const fetchCoinData = async () => {
+      const options = {
+        method: 'GET',
+        url: 'https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest',
+        params: {
+          start: 1,
+          limit: 100,
+          convert: 'USD'
+        },
+        headers: {
+          'X-CMC_PRO_API_KEY': import.meta.env.VITE_CMC_API_KEY,
+          'Accept': 'application/json'
+        },
+        proxy: false,
+      };
+
       try {
-        const response = await axios.get('https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest', {
-          headers: {
-            'X-CMC_PRO_API_KEY': import.meta.env.VITE_CMC_API_KEY,
-          },
-        });
-        setCoins(response.data.data);
-        setFilteredCoins(response.data.data);
+        setLoading(true);
+        // For development, we'll use a proxy to avoid CORS issues
+        const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
+        const response = await axios.request(options);
+        const data = response.data.data;
+        
+        setCoins(data);
+        setTotalPages(Math.ceil(data.length / coinsPerPage));
+        setLoading(false);
       } catch (error) {
-        console.error('Error:', error);
+        setError('Error fetching crypto data');
+        setLoading(false);
+        console.error('Error fetching data:', error);
       }
-      setLoading(false);
     };
 
-    getCoins();
+    fetchCoinData();
   }, []);
 
-  const handleSearch = (searchTerm) => {
-    const filtered = coins.filter(coin =>
-      coin.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      coin.symbol.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-    setFilteredCoins(filtered);
+  const handlePageChange = (event, value) => {
+    setPage(value);
   };
 
+  // Get current coins for pagination
+  const indexOfLastCoin = page * coinsPerPage;
+  const indexOfFirstCoin = indexOfLastCoin - coinsPerPage;
+  const currentCoins = coins.slice(indexOfFirstCoin, indexOfLastCoin);
+
   if (loading) {
-    return <CircularProgress style={{ margin: '20px auto', display: 'block' }} />;
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
+        <Typography color="error">{error}</Typography>
+      </Box>
+    );
   }
 
   return (
-    <div style={{ padding: '20px' }}>
-      <Typography variant="h4" style={{ textAlign: 'center', margin: '20px 0' }}>
-        Crypto Coin Tracker
+    <Box sx={{ padding: 3 }}>
+      <Typography variant="h4" component="h1" gutterBottom>
+        Cryptocurrency Dashboard
       </Typography>
-      <SearchPanel onSearch={handleSearch} />
+      <Typography variant="body1" sx={{ mb: 3 }}>
+        Browse cryptocurrencies and add them to your watchlist
+      </Typography>
+
       <Grid container spacing={3}>
-        {filteredCoins.map(coin => (
-          <Grid item xs={12} sm={6} md={4} key={coin.id}>
+        {currentCoins.map(coin => (
+          <Grid item xs={12} sm={6} md={4} lg={3} key={coin.id}>
             <CoinCard coin={coin} />
           </Grid>
         ))}
       </Grid>
-    </div>
+
+      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+        <Pagination 
+          count={totalPages} 
+          page={page} 
+          onChange={handlePageChange} 
+          color="primary" 
+        />
+      </Box>
+    </Box>
   );
-}
+};
 
 export default CryptoDashboard;
